@@ -1,0 +1,20 @@
+
+def thing::= beer
+def agent::= robot | supermarket
+
+percept has(thing), sipping(thing), robot_sent()
+
+def discrete::= drink(thing)
+
+def durative::= bored()
+    
+%TODO: add full Pedro comms
+
+tel drink_beer()
+drink_beer() {
+    has(beer) & sipping(beer) ~> ()
+    has(beer) ~> drink(beer)
+    robot_sent() ~> bored, wait(2) 
+    true ~> get_beer() % proc in robot.qlg
+    }
+

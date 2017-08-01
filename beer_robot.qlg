@@ -1,0 +1,8 @@
+
+?- consult owner.
+?- consult robot.
+
+act go()
+go() ~>
+    start_agent(human@localhost, all); 
+    start_task(domestic, drink_beer())

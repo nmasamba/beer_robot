@@ -1,0 +1,67 @@
+
+def thing::= beer | fridge
+def agent::= owner | supermarket
+def dir::= left | centre | right
+
+percept available(thing, thing), has(agent, thing), ready(agent), see(thing, dir), near(thing, dir), close_to(thing, dir), next_to(thing, dir), at(thing), under_limit(), sipping(agent, thing)
+
+def discrete::= open(thing) | close(thing) | grab(thing) | release(thing) | send_orders_to(agent)
+        
+def durative::= move(num) | turn(dir, num)
+        
+int limit:=10
+int beers_in_fridge:=5
+int already_drank:= 0
+    
+tel get_beer()
+get_beer() {
+    has(owner, beer) & sipping(owner, beer) ~> ()
+    available(beer, fridge) ~> hand_in_beer()
+    under_limit() ~> check_available(beer, fridge)
+    true ~> check_too_much() 
+    }
+
+tel check_available(thing, thing)
+check_available(Th, Th) {
+    $beers_in_fridge > 0 ~> ()
+    $beers_in_fridge <= 0 ~> order(supermarket, beer) % proc written in owner.qlg
+    at(fridge) ~> open(fridge)
+    true ~> get_next_to(fridge)
+    }
+
+tel check_too_much()
+check_too_much() {
+    $already_drank +:= 1 <= $limit ~> ()
+    $already_drank +:= 1 > $limit ~> write_list(["The NHS does not allow me to give you more than ",limit," beers a day! Sorry about that."])
+    }
+
+tel hand_in_beer() 
+hand_in_beer() {
+    has(owner, beer) ~> ()
+    at(owner) & ready(owner) ~> release(beer), $already_drank +:= 1
+    holding(beer) ~> get_next_to(owner)
+    true ~> grab(beer)
+    }
+
+tel get_next_to(thing) % to be used when Th is fridge or owner
+get_next_to(Th) {
+    next_to(Th, centre) ~> ()
+    next_to(Th, Dir) ~>  turn(Dir, 0.3) 
+    close_to(Th, _) ~> approach(Th, 0.5, 0.5)
+    near(Th, _) ~> approach(Th, 1.5, 0.5)
+    see(Th, _) ~> approach(Th, 2.5, 0.5)
+    true ~> turn(left, 0.5)
+    }
+
+% approach() generalised for approaching fridge or owner
+tel approach(thing, num, num)
+approach(Th, Fs, Ts) {
+    see(Th, centre) ~> move(Fs)
+    see(Th, Dir) ~> move(Fs), turn(Dir, Ts)
+    }
+
+tel order(agent, thing)
+order(Ag, Th) {
+    has(supermarket, beer) ~> $beers_in_fridge +:= 5
+    true ~> send_orders_to(Ag)
+    }

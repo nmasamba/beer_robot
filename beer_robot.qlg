@@ -1,6 +1,6 @@
 
-?- consult owner.
-?- consult robot.
+consult owner.
+consult robot.
 
 act go()
 go() ~>
